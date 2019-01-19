@@ -1,9 +1,19 @@
 const graphql = require('graphql');
 const cheerio = require('cheerio');
-const fetch = require('node-fetch');
+const nodeFetch = require('node-fetch');
+const fetch = require('fetch-cookie')(nodeFetch)
 const Nightmare = require('nightmare');
 
 const element = require('./element');
+const headers = {
+  "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+  "Accept-Encoding": "gzip, deflate",
+  "Accept-Language": "en-US,en;q=0.9",
+  "Dnt": "1",
+  "Host": "www.httpbin.org",
+  "Upgrade-Insecure-Requests": "1",
+  "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36"
+};
 
 const site = new graphql.GraphQLObjectType({
   name: 'Site',
@@ -90,7 +100,7 @@ module.exports = {
         });
     }
 
-    return fetch(args.url)
+    return fetch(args.url, {headers: headers})
       .then(res => res.text())
       .then(body => cheerio.load(body, {
         xmlMode: true

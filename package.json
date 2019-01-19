@@ -20,6 +20,7 @@
     "express": "^4.15.3",
     "express-graphql": "^0.6.6",
     "express-route-stats": "^0.0.0",
+    "fetch-cookie": "^0.7.2",
     "graphql": "^0.10.3",
     "next": "^5.1.0",
     "nightmare": "^2.10.0",
