@@ -3,23 +3,34 @@ const $ = require('cheerio');
 const _ = require('underscore');
 
 const {
+  GraphQLNonNull,
   GraphQLString
 } = graphql;
+const cssSelector = {
+  type: GraphQLString,
+  description:
+    'A [CSS selector](https://developer.mozilla.org/en-US/docs/Learn/CSS/Introduction_to_CSS/Selectors).',
+}
+
 const recursiveArgs = {
-  elem: {
-    type: GraphQLString,
-  },
+  selector: cssSelector,
 };
 
-const resolve = (root, args) => root(args.elem);
+const resolve = (root, args) => root(args.selector);
+const querySelect = (root, {selector}) => {
+  if (selector) {
+    return query(root, {selector});
+  }
+  return $(root);
+}
 
-const selector = (root, args) => {
+const query = (root, args) => {
   const html = $(root).html();
   // Need XML Mode true so that all HTML works.
   // e.g. Without it would not pase <tr><td>BLah</td></td> correctly
   return $.load(html, {
     xmlMode: true
-  })(args.elem);
+  })(args.selector);
 }
 
 const element = new graphql.GraphQLObjectType({
@@ -28,19 +39,19 @@ const element = new graphql.GraphQLObjectType({
     select: {
       args: recursiveArgs,
       description: 'Get an element from inside of this element',
-      resolve: (root, args) => selector(root, args),
+      resolve: (root, args) => query(root, args),
       type: element,
     },
     selectAll: {
       args: recursiveArgs,
       description: 'Get an element from inside of this element',
-      resolve: (root, args) => selector(root, args),
+      resolve: (root, args) => query(root, args),
       type: new graphql.GraphQLList(element),
     },
     count: {
       args: recursiveArgs,
       description: 'Get a count of provided elements',
-      resolve: (root, args) => selector(root, args).length,
+      resolve: (root, args) => query(root, args).length,
       type: graphql.GraphQLInt,
     },
     classList: {
@@ -63,7 +74,8 @@ const element = new graphql.GraphQLObjectType({
     },
     text: {
       description: 'The inner text of the element',
-      resolve: root => $(root).text(),
+      args: recursiveArgs,
+      resolve: (root, args) => querySelect(root, args).text(),  
       type: GraphQLString,
     },
     href: {
@@ -84,27 +96,29 @@ const element = new graphql.GraphQLObjectType({
      */
     data: {
       args: {
+        selector: cssSelector,
         name: {
-          type: GraphQLString,
+          type: new GraphQLNonNull(GraphQLString),
         },
       },
       description: 'Get the data attribute for element, if name is provided will grab that specific data attribute',
       resolve: (root, args) => {
         if (args.name && args.name.trim() !== '') {
-          return $(root).data(args.name);
+          return querySelect(root, args).data(args.name);
         }
-        return $(root).attr('data');
+        return querySelect(root, args).attr('data');
       },
       type: GraphQLString,
     },
     attr: {
       args: {
+        selector: cssSelector,
         name: {
-          type: GraphQLString,
+          type: new GraphQLNonNull(GraphQLString),
         },
       },
       description: 'Get an attribute off of the element',
-      resolve: (root, args) => $(root).attr(args.name),
+      resolve: (root, args) => querySelect(root, args).attr(args.name),
       type: GraphQLString,
     },
   }),
