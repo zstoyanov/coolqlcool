@@ -13,14 +13,21 @@ const sysexec = async (cmd) => {
   return stdout;
 }
 
-const ifconfig = {
-  type: GraphQLString,
-  description: 'Execute ifconfig command',
-  resolve: () => {
-    return sysexec('ifconfig');
+const commands = {
+  ip: {
+    type: GraphQLString,
+    description: 'Get current ip by calling http://checkip.amazonaws.com',
+    resolve: () => {
+      return sysexec('curl --socks5 127.0.0.1:9050 http://checkip.amazonaws.com');
+    }
   },
+  iprenew: {
+    type: GraphQLString,
+    description: 'Request new host ip',
+    resolve: () => {
+      return sysexec("printf 'AUTHENTICATE \"privacy1\"\r\nSIGNAL NEWNYM\r\n' | nc 127.0.0.1 9051");
+    }
+  }
 };
 
-module.exports = {
-  ifconfig: ifconfig
-}
+module.exports = commands
