@@ -12,7 +12,8 @@ const schema = new graphql.GraphQLSchema({
     name: 'Query',
     fields: {
       site: parse,
-      ifconfig: action.ifconfig,
+      ip: action.ip,
+      iprenew: action.iprenew,
     },
   }),
   
