@@ -25,7 +25,7 @@ const commands = {
     type: GraphQLString,
     description: 'Request new host ip',
     resolve: () => {
-      return sysexec("printf 'AUTHENTICATE \"privacy1\"\r\nSIGNAL NEWNYM\r\n' | nc 127.0.0.1 9051");
+      return sysexec("printf 'AUTHENTICATE \"privacy1\"\r\nSIGNAL NEWNYM\r\nQUIT\r\n' | nc 127.0.0.1 9051");
     }
   }
 };
